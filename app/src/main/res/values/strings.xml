@@ -3,4 +3,5 @@
     <string name="title_activity_image_picker_view">ImagePickerView</string>
     <string name="title_activity_image">ImageActivity</string>
     <string name="title_activity_main_page_view">MainPageView</string>
+    <string name="title_activity_result_page_view">ResultPageView</string>
 </resources>

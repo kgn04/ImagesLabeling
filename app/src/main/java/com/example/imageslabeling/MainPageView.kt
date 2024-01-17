@@ -46,7 +46,7 @@ fun MainPage() {
             contract = ActivityResultContracts.PickVisualMedia()
         ) {
             if (it != null) {
-                val intent = Intent(mContext, ImageActivity::class.java)
+                val intent = Intent(mContext, ResultActivity::class.java)
                 intent.putExtra("image_uri", it.toString())
                 mContext.startActivity(intent)
             }
