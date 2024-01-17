@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -34,10 +36,11 @@ import androidx.core.net.toUri
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.imageslabeling.ui.theme.ImagesLabelingTheme
-import com.example.imageslabeling.ui.theme.Labeler
 
-class ImageActivity : ComponentActivity(), LabelsCallback {
+class ImageActivity : ComponentActivity(), AIProcessorCallback {
     private var labels by mutableStateOf<List<String>>(emptyList())
+    private var text by mutableStateOf("")
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,7 +50,7 @@ class ImageActivity : ComponentActivity(), LabelsCallback {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    intent.getStringExtra("image_uri")?.let { ResultView(it, labels, this) }
+                    intent.getStringExtra("image_uri")?.let { ResultView(it, labels, text, this) }
                 }
             }
         }
@@ -58,20 +61,25 @@ class ImageActivity : ComponentActivity(), LabelsCallback {
             labels = labels + label
     }
 
-
+    override fun onTextReady(text: String) {
+        if(this.text != text)
+            this.text = text
+    }
 }
 
 @Composable
-fun ResultView(image_uri: String, labels: List<String>, instance: LabelsCallback) {
-    Labeler().getLabels(LocalContext.current, image_uri.toUri(), instance)
+fun ResultView(imageUri: String, labels: List<String>, text: String, instance: AIProcessorCallback) {
+    AIImageProcessor().processImage(LocalContext.current, imageUri.toUri(), instance)
     Column (
         modifier = Modifier
-            .fillMaxSize(),
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+        ,
         horizontalAlignment = Alignment.CenterHorizontally
     ){
         Spacer(modifier = Modifier.height(30.dp))
         AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current).data(image_uri)
+            model = ImageRequest.Builder(LocalContext.current).data(imageUri)
                 .crossfade(enable = true).build(),
             contentScale = ContentScale.Crop,
             contentDescription = null
@@ -79,9 +87,9 @@ fun ResultView(image_uri: String, labels: List<String>, instance: LabelsCallback
         Spacer(modifier = Modifier.height(30.dp))
         DataTable(header = "Labels", rows = labels)
         Spacer(modifier = Modifier.height(20.dp))
-        DataTable(header = "Text found in the image", rows = listOf("Lorem ipsum dolor sit amet, consectetur adipiscing elit. In augue diam, iaculis et fringilla fringilla, fringilla eget neque. Nulla sollicitudin pulvinar luctus. Sed vitae fermentum velit. Suspendisse potenti. Etiam nulla mauris, imperdiet id magna vitae, vestibulum pulvinar justo. "))
+        DataTable(header = "Text found in the image", rows = listOf(text))
         val clipboardManager = LocalClipboardManager.current
-        Button(onClick = { clipboardManager.setText(AnnotatedString(("aaa")))}) {
+        Button(onClick = { clipboardManager.setText(AnnotatedString((text)))}) {
             Text(text = "Copy to clipboard")
         }
     }
@@ -91,32 +99,30 @@ fun ResultView(image_uri: String, labels: List<String>, instance: LabelsCallback
 
 @Composable
 fun DataTable(header: String, rows: List<String>) {
-    LazyColumn(
+    Column(
         Modifier
             .fillMaxWidth()
             .padding(16.dp)
     ) {
-        item {
-            Row(Modifier.background(Color.Gray)) {
+        Row(Modifier.background(Color.Gray)) {
+            Text(
+                text = header,
+                Modifier
+                    .border(1.dp, Color.Black)
+                    .padding(8.dp)
+                    .fillMaxWidth(),
+                fontWeight = FontWeight.Bold
+            )
+        }
+        rows.forEach {
+            Row(Modifier.fillMaxWidth()) {
                 Text(
-                    text = header,
+                    text = it,
                     Modifier
                         .border(1.dp, Color.Black)
                         .padding(8.dp)
-                        .fillMaxWidth(),
-                    fontWeight = FontWeight.Bold
+                        .fillMaxWidth()
                 )
-            }
-            rows.forEach {
-                Row(Modifier.fillMaxWidth()) {
-                    Text(
-                        text = it,
-                        Modifier
-                            .border(1.dp, Color.Black)
-                            .padding(8.dp)
-                            .fillMaxWidth()
-                    )
-                }
             }
         }
     }

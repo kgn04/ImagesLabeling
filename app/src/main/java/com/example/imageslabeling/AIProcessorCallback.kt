@@ -1,5 +1,6 @@
 package com.example.imageslabeling
 
-interface LabelsCallback {
+interface AIProcessorCallback {
     fun onLabelsReady(label: String)
+    fun onTextReady(text: String)
 }
