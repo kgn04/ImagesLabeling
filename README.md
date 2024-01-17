@@ -3,6 +3,6 @@ Android app with Kotlin Jetpack Compose Frontend and Java backend. Just choose a
 
 ## Screenshots
 
-![alt text](screenshots/main_page.png)
-![alt text](screenshots/choosing_photo.png)
-![alt text](screenshots/result.png)
+![main_page](screenshots/main_page.png)
+![choosing_photo](screenshots/choosing_photo.png)
+![result](screenshots/result.png)
